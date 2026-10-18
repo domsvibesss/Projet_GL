@@ -1,0 +1,70 @@
+:
+:
+:
+:
+PAIEMENT: id_paiement, montant_depense, points_depenses, date_paiement
+
+:
+:
+:
+VALIDER, 11 COMMANDE, 11 PAIEMENT
+RECEVOIR, 1N EMPLOYE, 1N PAIEMENT
+
+POINTS: id, quantite, origine, date_reception, date_expiration
+RAPPORTER_C, 11 COMMANDE, 11 POINTS
+COMMANDE: id_commande, montant_local, points_accumules, date_commande, etat
+GERER_COMMANDE, 0N EMPLOYE, 1N COMMANDE
+EMPLOYE: id, poste, nom, prenom, tel, email, mdp, date_naissance, date_enregistrement, statut
+:
+AJOUTER, 1N GERANT, 11 EMPLOYE
+:
+GERANT: id, nom, prenom, tel, email, mdp, date_naissance, date_enregistrement
+
+RAPPORTER_J, 1N JEU, 01 POINTS
+POSSEDER_P, 1N ETUDIANT, 11 POINTS
+EFFECTUER, 0N ETUDIANT, 11 COMMANDE
+:
+ADMINISTRER, 1N ADMINISTRATEUR, 1N EMPLOYE
+REPONDRE, 0N EMPLOYE, 0N RECLAMATION
+:
+CONSULTER_GR, 0N GERANT, 01 RECLAMATION
+
+JEU: id, nom, description, image, date_debut, date_fin
+JOUER, 0N ETUDIANT, 0N JEU
+ETUDIANT: id, nom, prenom, tel, email, mdp, points_fidelite, code_parrain, date_inscription, statut
+:
+:
+DEPOSER, 0N ETUDIANT, 11 RECLAMATION
+RECLAMATION: id_reclamation, description, statut
+:
+JUGER, 0N GERANT, 11 REPONSE
+
+:
+SELECTIONNER, 0N ETUDIANT, 11 FAVORI
+PARRAINER, 0N [parrain] ETUDIANT, 11 [filleul] ETUDIANT: date_parrainage, etat
+BENEFICIER, 0N ETUDIANT, 0N PROMOTION
+:
+CONSULTER_AR, 0N ADMINISTRATEUR, 0N RECLAMATION
+:
+POSSEDER_R, 1N RECLAMATION, 11 REPONSE
+
+FAVORI: id_favori, date_enregistrement
+:
+PROMOTION: id, prix_initial, prix_promo, date_debut, date_fin
+DECLARER, 1N ADMINISTRATEUR, 11 PROMOTION
+ADMINISTRATEUR: id, poste, nom, prenom, tel, email, mdp, date_naissance, date_enregistrement
+:
+PRODUIRE, 0N ADMINISTRATEUR, 1N REPONSE
+:
+REPONSE: id_reponse, auteur, contenu, statut
+
+:
+ORGANISER, 1N ADMINISTRATEUR, 11 JEU
+CONSTITUER, 1N COMMANDE, 1N PLAT
+:
+GERER_PLAT, 1N ADMINISTRATEUR, 11 PLAT
+
+:
+:
+:
+PLAT: id, nom, description, prix, quantite
