@@ -16,7 +16,8 @@ return new class extends Migration
             $table->decimal('montant_local', 10, 2);
             $table->integer('points_accumules')->default(0);
             $table->dateTime('date_commande');
-            $table->string('etat');
+            $table->string('etat'); 
+            $table->string('destination');
 
             $table->foreignId('employe_id')->nullable()->constrained('employes')->nullOnDelete();
             $table->foreignId('etudiant_id')->constrained('etudiants')->cascadeOnDelete();  
