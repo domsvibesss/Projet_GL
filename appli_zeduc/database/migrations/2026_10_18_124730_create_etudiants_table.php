@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('mdp');
             $table->integer('points_fidelite')->default(0);
-            $table->string('codae_parrain')->nullable();
+            $table->string('code_parrain')->nullable();
             $table->dateTime('date_inscription');
             $table->string('statut');
             $table->timestamps();
