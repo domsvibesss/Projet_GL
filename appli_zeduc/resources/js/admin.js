@@ -1,89 +1,146 @@
 // ============================================================
-// Espace administrateur
-//   1. Supprimer une carte (employé / menu) avec confirmation (MODE DÉMO)
-//   2. Aperçu de la photo dans les formulaires d'ajout
+// Pages admin : suppression, photo, envoi démo, recherche de liste
 // ============================================================
 
-
-// ----- 1. SUPPRIMER UNE CARTE -----
+// ----- Suppression d'une ligne ou d'une carte (bouton avec data-supprimer) -----
 function activerSuppressionCartes() {
-    // S'il n'y a pas de carte sur cette page, on ne fait rien
-    // (ce fichier est chargé sur toutes les pages)
-    if (!document.querySelector('[data-carte]')) return;
-
-    // Un seul écouteur pour toute la page : on regarde si le clic
-    // est tombé sur un bouton « Supprimer »
-    document.addEventListener('click', (evenement) => {
-        const bouton = evenement.target.closest('[data-supprimer]');
+    document.addEventListener('click', (e) => {
+        const bouton = e.target.closest('[data-supprimer]');
         if (!bouton) return;
 
-        // On remonte du bouton jusqu'à sa carte, et on lit son titre
-        const carte = bouton.closest('[data-carte]');
-        const titre = carte.querySelector('h2')?.textContent.trim() ?? 'cet élément';
+        const carte  = bouton.closest('[data-carte]');         // la ligne ou la carte concernée
+        const groupe = bouton.closest('[data-item-id]');    // existe seulement sur les pages Employes et Menus
+        const titre  = carte?.dataset.nom ?? carte?.querySelector('h2')?.textContent.trim() ?? 'cet élément';
 
-        // confirm() ouvre une fenêtre « OK / Annuler »
-        if (confirm('Supprimer « ' + titre + ' » ?')) {
-            carte.remove(); // À remplacer par un appel au backend quand il sera prêt
+        if (!confirm(`Supprimer « ${titre} » ?`)) return;
+
+        if (groupe) {
+            // Pages Employes et Menus : on retire l element dans les deux vues (carte ET ligne du tableau)
+            document.querySelectorAll(`[data-item-id="${groupe.dataset.itemId}"]`)
+                    .forEach((element) => element.remove());
+        } else {
+            // Autres pages (Menus...) : comportement d'origine
+            carte.remove();
         }
     });
 }
 
-
-// ----- 2. APERÇU DE LA PHOTO -----
+// ----- Aperçu de la photo choisie (limite 2 Mo) -----
 function activerApercuPhoto() {
-    const champ = document.getElementById('champ-photo');
-    if (!champ) return; // pas de formulaire photo sur cette page
+    const $ = (id) => document.getElementById(id);
+    const champ  = $('champ-photo');
+    const apercu = $('apercu-photo');
+    if (!champ || !apercu) return;   // pas sur une page avec photo
 
-    const apercu          = document.getElementById('apercu-photo');
-    const boutonAjouter   = document.getElementById('btn-ajouter-photo');
-    const boutonSupprimer = document.getElementById('btn-supprimer-photo');
-    const TAILLE_MAX      = 2 * 1024 * 1024; // 2 Mo
+    // Affiche l'image (url) ou revient à la zone vide (url = '')
+    function afficher(url) {
+        if (url) apercu.src = url; else apercu.removeAttribute('src');
+        apercu.classList.toggle('hidden', !url);
+        $('photo-vide')?.classList.toggle('hidden', !!url);
+    }
 
-    // Notre joli bouton déclenche le champ fichier (qui est caché)
-    boutonAjouter.addEventListener('click', () => champ.click());
+    $('btn-ajouter-photo').addEventListener('click', () => champ.click());
 
-    // Quand un fichier est choisi : on vérifie sa taille, puis on l'affiche
     champ.addEventListener('change', () => {
         const fichier = champ.files[0];
         if (!fichier) return;
-
-        if (fichier.size > TAILLE_MAX) {
-            alert('La photo ne doit pas dépasser 2 Mo.');
+        if (fichier.size > 2 * 1024 * 1024) {
+            alert('Image trop lourde (2 Mo maximum).');
             champ.value = '';
             return;
         }
-
-        apercu.src = URL.createObjectURL(fichier); // adresse temporaire de l'image choisie
-        apercu.classList.remove('hidden');         // on montre l'image
+        afficher(URL.createObjectURL(fichier));
     });
 
-    // Supprimer la photo : on vide le champ et on cache l'aperçu
-    boutonSupprimer.addEventListener('click', () => {
+    $('btn-supprimer-photo').addEventListener('click', () => {
         champ.value = '';
-        apercu.removeAttribute('src');
-        apercu.classList.add('hidden');
+        afficher('');
     });
 }
-// ----- 3. ENVOI DU FORMULAIRE (MODE DÉMO) -----
-// À supprimer quand le backend est prêt, puis mettre sa vraie adresse dans action="..."
+
+// ----- Envoi en MODE DÉMO : on affiche un message au lieu d'envoyer -----
+// À supprimer quand le backend sera branché.
 function activerEnvoiDemo() {
-    const formulaire = document.getElementById('form-admin');
-    if (!formulaire) return; // pas de formulaire sur cette page
-
+    const form    = document.getElementById('form-admin');
     const message = document.getElementById('confirmation-admin');
+    if (!form || !message) return;
 
-    // « submit » se déclenche quand on clique sur le bouton d'envoi,
-    // seulement si le navigateur a déjà validé tous les champs (required, pattern...)
-    formulaire.addEventListener('submit', (evenement) => {
-        evenement.preventDefault(); // on bloque l'envoi réel
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        message.textContent = form.dataset.messageSucces ?? 'Enregistré (démo).';
 
-        // On affiche le message prévu par la page (ou un message par défaut)
-        message.textContent = formulaire.dataset.messageSucces ?? 'Enregistré (démo).';
-
-        formulaire.reset();                                       // on vide les champs
-        document.getElementById('btn-supprimer-photo').click();   // on vide aussi l'aperçu de la photo
+        // En ajout, on vide le formulaire ; en modification, on garde les valeurs
+        if (!form.dataset.modification) {
+            form.reset();
+            document.getElementById('btn-supprimer-photo')?.click();
+        }
     });
 }
+
+// ----- Recherche dans une liste : <input data-recherche-liste="#id-du-tbody"> -----
+function activerRechercheListe() {
+    const champ = document.querySelector('[data-recherche-liste]');
+    if (!champ) return;
+
+    const sansAccent = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+    champ.addEventListener('input', () => {
+        const recherche = sansAccent(champ.value);
+        document.querySelectorAll(`${champ.dataset.rechercheListe} tr`).forEach((ligne) => {
+            ligne.classList.toggle('hidden', !sansAccent(ligne.textContent).includes(recherche));
+        });
+    });
+}
+
+
+// ============================================================
+// Pages Employes et Menus : bascule Cartes / Tableau + recherche
+// ============================================================
+function activerVuesListe() {
+    const champ       = document.getElementById('champ-recherche');
+    const vueCartes   = document.getElementById('vue-cartes');
+    const vueTableau  = document.getElementById('vue-tableau');
+    const messageVide = document.getElementById('message-vide');
+    const boutons     = document.querySelectorAll('[data-vue]');
+
+    if (!champ || !vueCartes || !vueTableau) return;   // pas sur une page avec cartes + tableau
+
+    const sansAccent = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+    // Affiche « cartes » ou « tableau » et colore le bon bouton
+    function afficherVue(nom) {
+        vueCartes.classList.toggle('hidden', nom !== 'cartes');
+        vueTableau.classList.toggle('hidden', nom !== 'tableau');
+
+        boutons.forEach((b) => {
+            const actif = b.dataset.vue === nom;
+            b.classList.toggle('bg-primary', actif);
+            b.classList.toggle('text-black', actif);
+            b.classList.toggle('text-primary', !actif);
+        });
+    }
+
+    boutons.forEach((b) => b.addEventListener('click', () => afficherVue(b.dataset.vue)));
+
+    // Recherche : filtre les cartes ET les lignes du tableau en même temps
+    champ.addEventListener('input', () => {
+        const recherche = sansAccent(champ.value);
+        let visibles = 0;
+
+        vueTableau.querySelectorAll('[data-item-id]').forEach((ligne) => {
+            const ok = sansAccent(ligne.dataset.recherche).includes(recherche);
+            ligne.classList.toggle('hidden', !ok);
+            if (ok) visibles++;
+        });
+
+        vueCartes.querySelectorAll('[data-item-id]').forEach((carte) => {
+            carte.classList.toggle('hidden', !sansAccent(carte.dataset.recherche).includes(recherche));
+        });
+
+        messageVide?.classList.toggle('hidden', visibles > 0);
+    });
+}
+
 
 // ============================================================
 // Réclamations (administrateur) : fenêtre « Traiter », recherche, filtres
@@ -192,4 +249,6 @@ function activerReclamations() {
 activerSuppressionCartes();
 activerApercuPhoto();
 activerEnvoiDemo();
+activerRechercheListe();
+activerVuesListe();
 activerReclamations();
