@@ -1,0 +1,369 @@
+@import "tailwindcss";
+
+@theme {
+    --font-handlee: 'Handlee', cursive;
+    --font-gilda: 'Gilda Display', serif;
+    --font-italianno: 'Italianno', cursive;
+    --font-inter: 'Inter', sans-serif;
+    --color-or: #CFBD97;
+    --animate-apparition: apparition 1.5s ease-in-out both;
+}
+
+@keyframes apparition-douce {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes apparition {
+    from {
+        opacity: 0;
+        transform: translateY(-150px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes plat-entree {
+    from {
+        opacity: 0;
+        transform: translateY(50vh);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes plat-rotation {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.plat-entree {
+    animation: plat-entree 3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.plat-rotation {
+    animation: plat-rotation 30s linear infinite;
+}
+
+.menu-cartes > article {
+    animation: apparition 1.5s ease-in-out backwards;
+    animation-delay: 1s;
+    transition: translate 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                scale 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.6s ease;
+}
+
+.menu-cartes > article:hover {
+    translate: 0 -4px;
+    scale: 1.02;
+    box-shadow: 0 8px 18px rgb(0 0 0 / 0.35);
+}
+
+.menu-cartes > article:nth-child(1) { animation-delay:0s; }
+.menu-cartes > article:nth-child(2) { animation-delay:0.2s; }
+.menu-cartes > article:nth-child(3) { animation-delay:0.4s; }
+.menu-cartes > article:nth-child(4) { animation-delay:0.6s; }
+.menu-cartes > article:nth-child(5) { animation-delay:0.8s; }
+.menu-cartes > article:nth-child(6) { animation-delay:1s; }
+.menu-cartes > article:nth-child(7) { animation-delay:1.2s; }
+.menu-cartes > article:nth-child(8) { animation-delay:1.4s; }
+.menu-cartes > article:nth-child(9) { animation-delay:1.6s; }
+.menu-cartes > article:nth-child(10) { animation-delay:1.8s; }
+.menu-cartes > article:nth-child(11) { animation-delay:2s; }
+.menu-cartes > article:nth-child(12) { animation-delay:2.2s; }
+
+.plat-zones > * {
+    animation: apparition-douce 1.8s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.plat-zones > :nth-child(1) { animation-delay: 0s; }
+.plat-zones > :nth-child(2) { animation-delay: 0.8s; }
+.plat-zones > :nth-child(3) { animation-delay: 1.6s; }
+
+.plat-transition {
+    transition: opacity 0.8s ease,
+    translate 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    scale 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.plat-cache {
+    opacity: 0;
+    translate: 0 12px;
+}
+
+#plat-image.plat-cache {
+    translate: 0 0;
+    scale: 0.94;
+}
+
+#plat-description { transition-delay: 0.1s; }
+#plat-prix { transition-delay: 0.2s; }
+
+[data-complement] {
+    transition: translate 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                scale 0.3s ease,
+                box-shadow 0.3s ease,
+                opacity 0.5s ease;
+}
+
+[data-complement].complement-entre {
+    z-index: 50;
+    scale: 0.2;
+    opacity: 0;
+    transition: translate 0.5s ease-in, scale 0.5s ease-in, opacity 0.5s ease-in;
+}
+
+[data-complement].complement-invisible {
+    opacity: 0;
+    transition: none;
+}
+
+#plat-image.plat-survole {
+    scale: 1.03;
+    box-shadow: 4px 4px 10vw rgb(255 255 255 / 0.8);
+}
+
+#plat-image.plat-recoit {
+    scale: 1.06;
+}
+
+.ticket {
+    visibility: hidden;
+    opacity: 0;
+    translate: 0 -30%;
+    scale: 0.3;
+    rotate: 0deg;
+    transition: opacity 0.5s ease,
+                translate 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                scale 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                rotate 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                visibility 0s linear 0.7s;
+}
+
+.ticket.ticket-ouvert {
+    visibility: visible;
+    opacity: 1;
+    translate: 0 -50%;
+    scale: 1;
+    rotate: -2deg;
+    transition-delay: 0s;
+}
+
+.ticket.ticket-ouvert.ticket-envol {
+    opacity: 0;
+    scale: 0.08;
+    rotate: 14deg;
+    pointer-events: none;
+    transition: translate 0.9s cubic-bezier(0.55, 0, 0.7, 0.4),
+                scale 0.9s ease-in,
+                rotate 0.9s ease-in,
+                opacity 0.9s ease-in;
+}
+
+@keyframes bouton-pulse {
+    0%   { scale: 1; }
+    40%  { scale: 1.08; }
+    100% { scale: 1; }
+}
+
+#ajouter.bouton-recoit {
+    animation: bouton-pulse 0.6s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .menu-cartes > article,
+    .plat-entree,
+    .plat-rotation,
+    .plat-zones > * {
+        animation: none;
+    }
+    .ticket {
+        transition: none;
+    }
+
+    .plat-transition {
+        transition: opacity 0.8s ease,
+                    translate 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+                    scale 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+                    box-shadow 0.5s ease;
+    }
+}
+/* Arrivée d'un article : monte en fondu, avec un décalage entre les cartes */
+@keyframes article-entree {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Sortie d'un article retiré : glisse vers la droite en fondu */
+@keyframes article-sortie {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(3rem);
+  }
+}
+
+.article-entree {
+  animation: article-entree 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 120ms);
+}
+
+.article-sortie {
+  animation: article-sortie 0.4s ease-in both;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-entree,
+  .article-sortie {
+    animation: none;
+  }
+}
+
+.bloc-entree {
+  animation: article-entree 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 120ms);
+}
+
+@keyframes fond-entree {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modale-entree {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes secousse {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+#modale-cites:not(.hidden),
+#modale-carte:not(.hidden) {
+  animation: fond-entree 0.3s ease both;
+}
+
+#modale-cites:not(.hidden) > div,
+#modale-carte:not(.hidden) > div {
+  animation: modale-entree 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.secousse {
+  animation: secousse 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bloc-entree,
+  .secousse,
+  #modale-cites:not(.hidden),
+  #modale-carte:not(.hidden),
+  #modale-cites:not(.hidden) > div,
+  #modale-carte:not(.hidden) > div {
+    animation: none;
+  }
+}
+
+@keyframes reclamation-surbrillance {
+  0%, 100% { background-color: transparent; }
+  30%, 70% { background-color: rgb(207 189 151 / 0.35); }
+}
+
+.article-entree.reclamation-nouvelle {
+  animation: article-entree 0.6s cubic-bezier(0.22, 1, 0.36, 1) both,
+             reclamation-surbrillance 2.4s ease-in-out both;
+  animation-delay: calc(var(--i, 0) * 120ms),
+                   calc(var(--i, 0) * 120ms + 600ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-entree.reclamation-nouvelle {
+    animation: none;
+  }
+}
+
+@keyframes medaille-entree {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-20deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.medaille-entree {
+  animation: medaille-entree 1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+}
+
+#modale-fidelite:not(.hidden) {
+  animation: fond-entree 0.3s ease both;
+}
+
+#modale-fidelite:not(.hidden) > div {
+  animation: modale-entree 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medaille-entree,
+  #modale-fidelite:not(.hidden),
+  #modale-fidelite:not(.hidden) > div {
+    animation: none;
+  }
+}
+
+@keyframes vapeur {
+  0% {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  25% {
+    opacity: 0.35;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+
+.vapeur {
+  animation: vapeur 6s ease-out infinite;
+  animation-delay: calc(2.5s + var(--i, 0) * 2s);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vapeur {
+    animation: none;
+  }
+}
