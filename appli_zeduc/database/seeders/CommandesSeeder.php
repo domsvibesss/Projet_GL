@@ -16,21 +16,20 @@ class CommandesSeeder extends Seeder
         $idEtudiant = fn (string $email) => DB::table('etudiants')->where('email', $email)->value('id');
         $caissier   = DB::table('employes')->where('email', 'employe1@zeduc.test')->value('id');
         $roue       = DB::table('jeux')->where('nom', 'Roue de la chance')->value('id');
-        $prix       = DB::table('plats')->pluck('prix', 'nom');   // nom => prix
-        $idPlat     = DB::table('plats')->pluck('id', 'nom');     // nom => id
+        $prix       = DB::table('plats')->pluck('prix', 'nom');
+        $idPlat     = DB::table('plats')->pluck('id', 'nom');
 
-        // Règles du cahier des charges : 1 000 F dépensés = 1 point ; 15 points = 1 000 F de réduction
         $PAS_POINT = 1000;
         $SEUIL_REDUCTION = 15;
         $VALEUR_REDUCTION = 1000;
 
-        // Valeurs de commandes.etat : effectué | en_cours | rejeté | en_attente
+        // etat : effectué | en_cours | rejeté | en_attente
         $commandes = [
             ['etudiant1@zeduc.test', 'effectué',  12, 0,  ['Poulet DG' => 1, 'Jus de gingembre' => 1]],
             ['etudiant1@zeduc.test', 'effectué',   6, 0,  ['Riz sauce tomate' => 2, 'Beignets haricots bouillie' => 2]],
-            ['etudiant2@zeduc.test', 'effectué',   9, 0,  ['Poisson braisé' => 1, 'Jus de gingembre' => 1]],   // 1re commande du filleul (index 2)
+            ['etudiant2@zeduc.test', 'effectué',   9, 0,  ['Poisson braisé' => 1, 'Jus de gingembre' => 1]],
             ['etudiant3@zeduc.test', 'effectué',   4, 0,  ['Ndolé et plantain' => 1, 'Koki et plantain' => 1]],
-            ['etudiant1@zeduc.test', 'effectué',   2, 15, ['Poulet DG' => 1]],                                  // paiement avec 15 points
+            ['etudiant1@zeduc.test', 'effectué',   2, 15, ['Poulet DG' => 1]],
             ['etudiant7@zeduc.test', 'effectué',   2, 0,  ['Poulet DG' => 2]],
             ['etudiant2@zeduc.test', 'effectué',   1, 0,  ['Riz sauce tomate' => 1, 'Koki et plantain' => 1]],
             ['etudiant4@zeduc.test', 'en_cours',   1, 0,  ['Brochettes de boeuf' => 3]],
@@ -38,14 +37,13 @@ class CommandesSeeder extends Seeder
             ['etudiant6@zeduc.test', 'rejeté',     3, 0,  ['Eru et water-fufu' => 1]],
         ];
 
-        $solde = [];        // points restants par étudiant
-        $commandeIds = [];  // pour retrouver une commande par son rang
+        $solde = [];
+        $commandeIds = [];
 
         foreach ($commandes as $index => [$email, $etat, $jours, $pointsUtilises, $lignes]) {
             $etudiantId = $idEtudiant($email);
             $date = now()->subDays($jours)->setTime(12, 30);
 
-            // Montant = somme des lignes (le prix actuel du plat)
             $montant = 0;
             foreach ($lignes as $nomPlat => $quantite) {
                 $montant += $prix[$nomPlat] * $quantite;
@@ -57,12 +55,12 @@ class CommandesSeeder extends Seeder
                 'points_accumules' => $pointsGagnes,
                 'date_commande'    => $date,
                 'etat'             => $etat,
+                'destination'      => $etat === 'en_attente' ? 'a_emporter' : 'sur_place', // <-- FIX ICI
                 'employe_id'       => $etat === 'en_attente' ? null : $caissier,
                 'etudiant_id'      => $etudiantId,
             ] + $ts);
             $commandeIds[$index] = $commandeId;
 
-            // Lignes de commande : seulement si Rigeau a créé la table de liaison commande_plat
             if (Schema::hasTable('commande_plat')) {
                 $avecDates = Schema::hasColumn('commande_plat', 'created_at');
                 foreach ($lignes as $nomPlat => $quantite) {
@@ -75,7 +73,6 @@ class CommandesSeeder extends Seeder
             }
 
             if ($etat === 'effectué') {
-                // Paiement : on déduit la réduction obtenue avec les points
                 $reduction = intdiv($pointsUtilises, $SEUIL_REDUCTION) * $VALEUR_REDUCTION;
                 DB::table('paiements')->insert([
                     'montant_depense' => $montant - $reduction,
@@ -85,7 +82,6 @@ class CommandesSeeder extends Seeder
                     'commande_id'     => $commandeId,
                 ] + $ts);
 
-                // Points gagnés par achat (expirent après 12 mois)
                 if ($pointsGagnes > 0) {
                     DB::table('points')->insert([
                         'quantite'        => $pointsGagnes,
@@ -102,7 +98,6 @@ class CommandesSeeder extends Seeder
             }
         }
 
-        // Points gagnés avec le jeu « Roue de la chance » (Alice)
         $alice = $idEtudiant('etudiant1@zeduc.test');
         $dateJeu = now()->subDays(8);
         DB::table('points')->insert([
@@ -116,7 +111,6 @@ class CommandesSeeder extends Seeder
         ] + $ts);
         $solde[$alice] += 12;
 
-        // Parrainage : Alice parraine Bruno, récompense à la 1re commande de Bruno (commande n°3)
         $datePar = now()->subDays(9);
         DB::table('points')->insert([
             'quantite'        => 5,
@@ -129,7 +123,6 @@ class CommandesSeeder extends Seeder
         ] + $ts);
         $solde[$alice] += 5;
 
-        // Solde de points = points gagnés - points dépensés
         foreach ($solde as $etudiantId => $points) {
             DB::table('etudiants')->where('id', $etudiantId)->update(['points_fidelite' => max(0, $points)]);
         }
