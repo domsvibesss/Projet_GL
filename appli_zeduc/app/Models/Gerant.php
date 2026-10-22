@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\AuthenticatesWithMdp;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Gerant extends Model
+class Gerant extends Authenticatable
 {
-    protected $table = 'Gerants';
+    use AuthenticatesWithMdp, Notifiable;
+    protected $table = 'gerants';
 
     // Use date_enregistrement as the creation timestamp; no updated_at column
     const CREATED_AT = 'date_enregistrement';
