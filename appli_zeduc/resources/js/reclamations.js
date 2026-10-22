@@ -11,7 +11,7 @@ function init() {
 
     // Ce fichier est chargé sur toutes les pages : si on n'est pas
     // sur la page « réclamations », on ne fait rien.
-    if (!liste) return;
+    if (!liste || !document.getElementById('btn-envoyer')) return;
 
     const champRecherche = document.getElementById('recherche-reclamation');
     const titreDetail    = document.getElementById('detail-titre');
