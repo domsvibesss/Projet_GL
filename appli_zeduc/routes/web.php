@@ -38,3 +38,6 @@ Route::get('/admin/promotions', function () {
 Route::get('/admin/parametres', function () {
     return view('admin.parametres');
 });
+Route::get('/admin/reclamations', function () {
+    return view('admin.reclamations');
+});
