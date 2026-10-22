@@ -1,5 +1,8 @@
 <?php
-
+ 
+use App\Http\Controllers\Admin\{EmployeeController, JeuController, MenuController,
+    PromotionController, ReclamationController, ReponseController, StatsController};
+use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/statistiques', function () {
@@ -26,16 +29,6 @@ Route::get('/admin/employes', function () {
 Route::get('/admin/employes/ajouter', function () {
     return view('admin.employes-ajout');
 });
-// Modifier un employe : meme formulaire que l'ajout, deja rempli.
-// Le backend remplacera ce tableau par l'employe trouve avec son id.
-Route::get('/admin/employes/{id}/modifier', function ($id) {
-    return view('admin.employes-ajout', [
-        'employe' => [
-            'id' => $id, 'nom' => 'Mballa', 'prenom' => 'Jean', 'poste' => 'Cuisinier',
-            'contact' => '+237 6 90 11 22 33', 'photo' => 'images/admin/cuisinier.png',
-        ],
-    ]);
-});
 Route::get('/admin/menus', function () {
     return view('admin.menus');
 });
@@ -51,5 +44,3 @@ Route::get('/admin/parametres', function () {
 Route::get('/admin/reclamations', function () {
     return view('admin.reclamations');
 });
-
-
