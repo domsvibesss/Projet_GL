@@ -73,6 +73,22 @@ class EmployeController extends Controller
             ])
             ->paginate($data['par_page'] ?? 20);
 
+        // Colonne « Articles » de la page Commandes : on récupère les plats de TOUTES
+        // les commandes de la page en UNE seule requête (et non une par commande).
+        $lignes = DB::table('commande_plat as cp')
+            ->join('plats as p', 'p.id', '=', 'cp.plat_id')
+            ->whereIn('cp.commande_id', $commandes->pluck('id'))
+            ->get(['cp.commande_id', 'p.nom', 'cp.quantite'])
+            ->groupBy('commande_id');
+
+        // Ajoute à chaque commande un texte du type « 2 × Poulet DG, 1 × Ndolé »
+        $commandes->getCollection()->transform(function ($c) use ($lignes) {
+            $c->articles = ($lignes[$c->id] ?? collect())
+                ->map(fn ($l) => "{$l->quantite} × {$l->nom}")
+                ->implode(', ');
+            return $c;
+        });
+
         return response()->json($commandes);
     }
 
