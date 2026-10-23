@@ -4,13 +4,16 @@ namespace App\Models;
 
 use App\Models\Concerns\AuthenticatesWithMdp;
 use App\Models\Concerns\HasDateEnregistrement;
+use App\Models\Concerns\HasNumero;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class Employe extends Authenticatable
 {
-    use AuthenticatesWithMdp, HasDateEnregistrement, Notifiable;
+    use AuthenticatesWithMdp, HasDateEnregistrement, HasNumero, Notifiable;
+
+    public const PREFIXE_NUMERO = 'EMP';   // numéro affiché : EMP-0007
 
     // Valeurs de la colonne `statut` (voir UtilisateursSeeder)
     public const STATUT_ACTIF   = 'actif';

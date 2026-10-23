@@ -2,20 +2,25 @@
 
 use App\Http\Controllers\Admin\{EmployeController, MenuController, ParametreController,
     PromotionController, ReclamationController, StatsController};
+use App\Http\Controllers\Gerant;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/statistiques', function () {
-    return view('statistiques');
+// ===== Espace gérant =====
+// Le formulaire « Créer un compte » a action="#" : il envoie à /employes (même URL que la page).
+Route::name('gerant.')->group(function () {
+    Route::get('/supervision', [Gerant\SupervisionController::class, 'index'])->name('supervision');
+
+    Route::get('/employes', [Gerant\EmployeController::class, 'index'])->name('employes.index');
+    Route::post('/employes', [Gerant\EmployeController::class, 'store'])->name('employes.store');
+
+    // Mêmes statistiques que l'administrateur, avec la barre de navigation du gérant
+    Route::get('/statistiques', StatsController::class)->name('statistiques');
+
+    Route::get('/reclamations', [Gerant\ReclamationController::class, 'index'])->name('reclamations.index');
+    Route::post('/reclamations/{reclamation}/reponse', [Gerant\ReclamationController::class, 'repondre'])
+        ->name('reclamations.repondre');
 });
-Route::get('/supervision', function () {
-    return view('supervision');
-});
-Route::get('/employes', function () {
-    return view('employes');
-});
-Route::get('/reclamations', function () {
-    return view('reclamations');
-});
+
 // ===== Espace administrateur (Humphrey) =====
 // Les formulaires des pages admin ont action="#" : ils envoient à l'URL de la page elle-même.
 // Les routes POST / PUT sont donc sur les mêmes URL que les pages d'ajout et de modification.

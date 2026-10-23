@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Administrateur;
+use App\Models\Commande;
 use App\Models\Employe;
 use App\Models\Etudiant;
 use App\Models\Plat;
@@ -200,8 +201,8 @@ class PagesAdminTest extends TestCase
             ->assertDontSee('185 000 F')         // plus les chiffres de démo
             ->assertDontSee('Dominique Daphne');
 
-        // La page du gérant n'envoie rien : elle garde ses chiffres de démo
-        $this->get('/statistiques')->assertOk()->assertSee('185 000 F');
+        // La page du gérant affiche les mêmes chiffres, avec sa propre barre de navigation
+        $this->get('/statistiques')->assertOk()->assertDontSee('185 000 F')->assertDontSee('Humphrey Mbeng');
     }
 
     public function test_les_seeders_remplissent_les_pages_admin(): void
@@ -211,6 +212,15 @@ class PagesAdminTest extends TestCase
         $this->get('/admin/promotions')->assertOk()->assertSee('Vendredrink !!!')->assertSee('-50%');
         $this->get('/admin/menus')->assertOk()->assertSee('Poulet DG')->assertSee('images/plats/poulet-dg.png');
         $this->get('/admin/statistiques')->assertOk()->assertSee('Alice Mbarga')->assertDontSee('Dominique Daphne');
+        $this->get('/admin/reclamations')->assertOk()->assertSee('REC-0001');
+
+        // Table commande_plat : on sait ce que chaque client a pris
+        $commande = Commande::where('etat', Commande::ETAT_LIVREE)->oldest('id')->firstOrFail();
+        $this->assertSame('1 × Poulet DG, 1 × Jus de gingembre', $commande->articles);
+        $this->assertSame('CMD-0001', $commande->numero);
+
+        // Les 4 statuts de la supervision existent dans les données de test
+        $this->assertEqualsCanonicalizing(Commande::ETATS, Commande::distinct()->pluck('etat')->all());
     }
 
     // ---------- Réclamations ----------

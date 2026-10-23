@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class CommandesSeeder extends Seeder
 {
@@ -24,18 +23,18 @@ class CommandesSeeder extends Seeder
         $SEUIL_REDUCTION = 15;
         $VALEUR_REDUCTION = 1000;
 
-        // Valeurs de commandes.etat : effectué | en_cours | rejeté | en_attente
+        // Valeurs de commandes.etat (voir Commande::ETATS) : en_attente | en_preparation | prete | livree
         $commandes = [
-            ['etudiant1@zeduc.test', 'effectué',  12, 0,  ['Poulet DG' => 1, 'Jus de gingembre' => 1]],
-            ['etudiant1@zeduc.test', 'effectué',   6, 0,  ['Riz sauce tomate' => 2, 'Beignets haricots bouillie' => 2]],
-            ['etudiant2@zeduc.test', 'effectué',   9, 0,  ['Poisson braisé' => 1, 'Jus de gingembre' => 1]],   // 1re commande du filleul (index 2)
-            ['etudiant3@zeduc.test', 'effectué',   4, 0,  ['Ndolé et plantain' => 1, 'Koki et plantain' => 1]],
-            ['etudiant1@zeduc.test', 'effectué',   2, 15, ['Poulet DG' => 1]],                                  // paiement avec 15 points
-            ['etudiant7@zeduc.test', 'effectué',   2, 0,  ['Poulet DG' => 2]],
-            ['etudiant2@zeduc.test', 'effectué',   1, 0,  ['Riz sauce tomate' => 1, 'Koki et plantain' => 1]],
-            ['etudiant4@zeduc.test', 'en_cours',   1, 0,  ['Brochettes de boeuf' => 3]],
+            ['etudiant1@zeduc.test', 'livree',    12, 0,  ['Poulet DG' => 1, 'Jus de gingembre' => 1]],
+            ['etudiant1@zeduc.test', 'livree',     6, 0,  ['Riz sauce tomate' => 2, 'Beignets haricots bouillie' => 2]],
+            ['etudiant2@zeduc.test', 'livree',     9, 0,  ['Poisson braisé' => 1, 'Jus de gingembre' => 1]],   // 1re commande du filleul (index 2)
+            ['etudiant3@zeduc.test', 'livree',     4, 0,  ['Ndolé et plantain' => 1, 'Koki et plantain' => 1]],
+            ['etudiant1@zeduc.test', 'livree',     2, 15, ['Poulet DG' => 1]],                                  // paiement avec 15 points
+            ['etudiant7@zeduc.test', 'livree',     2, 0,  ['Poulet DG' => 2]],
+            ['etudiant2@zeduc.test', 'livree',     1, 0,  ['Riz sauce tomate' => 1, 'Koki et plantain' => 1]],
+            ['etudiant4@zeduc.test', 'en_preparation', 1, 0,  ['Brochettes de boeuf' => 3]],
             ['etudiant5@zeduc.test', 'en_attente', 0, 0,  ['Spaghetti sauté' => 2]],
-            ['etudiant6@zeduc.test', 'rejeté',     3, 0,  ['Eru et water-fufu' => 1]],
+            ['etudiant6@zeduc.test', 'prete',      0, 0,  ['Eru et water-fufu' => 1]],
         ];
 
         $solde = [];        // points restants par étudiant
@@ -50,7 +49,7 @@ class CommandesSeeder extends Seeder
             foreach ($lignes as $nomPlat => $quantite) {
                 $montant += $prix[$nomPlat] * $quantite;
             }
-            $pointsGagnes = $etat === 'effectué' ? intdiv((int) $montant, $PAS_POINT) : 0;
+            $pointsGagnes = $etat === 'livree' ? intdiv((int) $montant, $PAS_POINT) : 0;
 
             $commandeId = DB::table('commandes')->insertGetId([
                 'montant_local'    => $montant,
@@ -63,19 +62,17 @@ class CommandesSeeder extends Seeder
             ] + $ts);
             $commandeIds[$index] = $commandeId;
 
-            // Lignes de commande : seulement si Rigeau a créé la table de liaison commande_plat
-            if (Schema::hasTable('commande_plat')) {
-                $avecDates = Schema::hasColumn('commande_plat', 'created_at');
-                foreach ($lignes as $nomPlat => $quantite) {
-                    DB::table('commande_plat')->insert([
-                        'commande_id' => $commandeId,
-                        'plat_id'     => $idPlat[$nomPlat],
-                        'quantite'    => $quantite,
-                    ] + ($avecDates ? $ts : []));
-                }
+            // Lignes de commande (table de liaison commande_plat) : quels plats, combien, à quel prix
+            foreach ($lignes as $nomPlat => $quantite) {
+                DB::table('commande_plat')->insert([
+                    'commande_id'   => $commandeId,
+                    'plat_id'       => $idPlat[$nomPlat],
+                    'quantite'      => $quantite,
+                    'prix_unitaire' => $prix[$nomPlat],
+                ] + $ts);
             }
 
-            if ($etat === 'effectué') {
+            if ($etat === 'livree') {   // vente faite : paiement + points
                 // Paiement : on déduit la réduction obtenue avec les points
                 $reduction = intdiv($pointsUtilises, $SEUIL_REDUCTION) * $VALEUR_REDUCTION;
                 DB::table('paiements')->insert([

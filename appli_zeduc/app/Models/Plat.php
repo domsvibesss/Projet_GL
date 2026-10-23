@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Plat extends Model
 {
@@ -31,6 +32,12 @@ class Plat extends Model
     public function administrateur(): BelongsTo
     {
         return $this->belongsTo(Administrateur::class);
+    }
+
+    // Table commande_plat : les commandes qui contiennent ce plat
+    public function commandes(): BelongsToMany
+    {
+        return $this->belongsToMany(Commande::class)->withPivot('quantite', 'prix_unitaire')->withTimestamps();
     }
 
     // Dishes currently in stock

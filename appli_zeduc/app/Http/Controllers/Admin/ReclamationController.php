@@ -62,17 +62,13 @@ class ReclamationController extends Controller
         $reponse = $r->derniereReponse;
 
         return [
-            'id'         => 'R-'.str_pad($r->id, 3, '0', STR_PAD_LEFT),
+            'id'         => $r->numero,   // REC-0001
             'client'     => $r->etudiant?->nom_complet ?? 'Étudiant supprimé',
             'objet'      => Str::limit($r->description, 40),
             'date'       => $r->created_at?->format('d/m/Y'),
             'type'       => Str::contains(Str::lower($r->type_reclamation), 'point') ? 'points' : 'client',
-            'priorite'   => in_array($r->priorite, Reclamation::PRIORITES, true) ? $r->priorite : 'normale',
-            'statut'     => match (true) {
-                $r->statut !== Reclamation::STATUT_EN_COURS => 'resolue',
-                $reponse !== null                           => 'en_cours',
-                default                                     => 'nouvelle',
-            },
+            'priorite'   => $r->priorite_affichee,
+            'statut'     => $r->statut_affiche,
             'message'    => $r->description,
             'reponse'    => $reponse?->contenu,
             'validation' => match ($reponse?->statut) {

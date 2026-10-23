@@ -2,7 +2,7 @@
 // Page « Réclamations »
 //   1. Recherche en direct dans le tableau
 //   2. Clic sur une ligne : la réclamation s'affiche à droite
-//   3. Envoi de la réponse (MODE DÉMO, sans backend)
+//   3. Envoi de la réponse au serveur (formulaire #form-reponse)
 // ============================================================
 
 function init() {
@@ -17,7 +17,7 @@ function init() {
     const titreDetail    = document.getElementById('detail-titre');
     const messageDetail  = document.getElementById('detail-message');
     const champReponse   = document.getElementById('reponse');
-    const boutonEnvoyer  = document.getElementById('btn-envoyer');
+    const formulaire     = document.getElementById('form-reponse');
     const confirmation   = document.getElementById('confirmation');
 
     // Met en minuscules et enlève les accents : « Hervé » = « herve »
@@ -56,35 +56,37 @@ function init() {
         titreDetail.textContent   = 'Réclamation - ' + ligne.dataset.id;
         messageDetail.textContent = '“' + ligne.dataset.message + '”';
 
-        // On repart d'une réponse vide
-        champReponse.value = '';
-        afficherMessage('', false);
+        // Le formulaire enverra la réponse à l'adresse de CETTE réclamation (data-url)
+        formulaire.action = ligne.dataset.url;
     }
 
     // UN seul écouteur sur tout le tableau (« délégation d'événement ») :
     // on regarde sur quelle ligne le clic est tombé.
     liste.addEventListener('click', (evenement) => {
         const ligne = evenement.target.closest('tr');
-        if (ligne) selectionner(ligne);
+        if (!ligne) return;
+
+        selectionner(ligne);
+
+        // Nouvelle réclamation choisie : on repart d'une réponse vide
+        champReponse.value = '';
+        afficherMessage('', false);
     });
 
     // Au chargement, la première réclamation est déjà sélectionnée
+    // (on garde le message « Réponse envoyée » affiché par le serveur après un envoi)
     const premiere = liste.querySelector('tr');
     if (premiere) selectionner(premiere);
 
 
-    // ===== 3. ENVOI DE LA RÉPONSE (MODE DÉMO) =====
-    // À remplacer quand le backend est prêt : on enverra la réponse à son adresse.
-    boutonEnvoyer.addEventListener('click', () => {
-        if (!ligneActive) return;
-
-        if (champReponse.value.trim() === '') {
+    // ===== 3. ENVOI DE LA RÉPONSE =====
+    // Le formulaire part au serveur, qui enregistre la réponse puis recharge la page.
+    // On vérifie seulement avant l'envoi que la réponse n'est pas vide.
+    formulaire.addEventListener('submit', (evenement) => {
+        if (!ligneActive || champReponse.value.trim() === '') {
+            evenement.preventDefault();
             afficherMessage('Écris une réponse avant de l\'envoyer.', true);
-            return;
         }
-
-        afficherMessage('Réponse envoyée à ' + ligneActive.dataset.client + '.', false);
-        champReponse.value = '';
     });
 }
 

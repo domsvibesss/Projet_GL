@@ -70,7 +70,8 @@
                         {{-- data-... : des informations invisibles que le JavaScript lira au clic --}}
                         <tr data-id="{{ $r['id'] }}"
                             data-client="{{ $r['client'] }}"
-                            data-message="{{ $r['message'] }}">
+                            data-message="{{ $r['message'] }}"
+                            data-url="{{ $r['url'] ?? '' }}">
 
                             <td>{{ $r['id'] }}</td>
                             <td>{{ $r['client'] }}</td>
@@ -117,20 +118,22 @@
                     <p id="detail-message" class="mt-4 rounded-3xl bg-primary/30 p-6 text-center text-lg"></p>
                 </div>
 
-                {{-- Droite : la réponse à écrire --}}
-                <div>
+                {{-- Droite : la réponse à écrire (vrai formulaire : le JavaScript met
+                     dans action l'adresse de la réclamation sélectionnée) --}}
+                <form id="form-reponse" method="POST">
+                    @csrf
                     <label for="reponse" class="text-2xl">Votre réponse</label>
-                    <textarea id="reponse" placeholder="Écrire la réponse au client..."
+                    <textarea id="reponse" name="contenu" placeholder="Écrire la réponse au client..."
                               class="mt-4 h-40 w-full resize-none rounded-xl border border-primary bg-white p-4 focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
 
-                    {{-- Message de confirmation ou d'erreur (rempli par le JavaScript) --}}
-                    <p id="confirmation" class="mt-2 min-h-6 text-sm"></p>
+                    {{-- Message de confirmation (vert) ou d'erreur (rouge), après l'envoi ou par le JavaScript --}}
+                    <p id="confirmation" class="mt-2 min-h-6 text-sm {{ $errors->any() ? 'text-red-600' : 'text-green-700' }}">{{ $errors->first() ?: session('success') }}</p>
 
-                    <button id="btn-envoyer" type="button"
+                    <button id="btn-envoyer" type="submit"
                             class="mt-2 w-full rounded-full bg-primary px-6 py-4 text-xl text-black transition hover:opacity-80">
                         Envoyer la réponse
                     </button>
-                </div>
+                </form>
 
             </div>
         </div>

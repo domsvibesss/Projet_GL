@@ -18,8 +18,9 @@ class StatsService
     {
         return [
             'commandes_jour'     => Commande::where('date_commande', '>=', now()->startOfDay())->count(),
-            'commandes_en_cours' => Commande::whereIn('etat', [Commande::ETAT_EN_ATTENTE, Commande::ETAT_EN_COURS])->count(),
-            'chiffre_affaires'   => (int) round(Commande::where('etat', Commande::ETAT_EFFECTUE)
+            // en cours = pas encore livrées
+            'commandes_en_cours' => Commande::where('etat', '!=', Commande::ETAT_LIVREE)->count(),
+            'chiffre_affaires'   => (int) round(Commande::where('etat', Commande::ETAT_LIVREE)
                 ->where('date_commande', '>=', now()->subDays($jours))
                 ->sum('montant_local')),
             'clients_actifs'     => Etudiant::where('statut', Etudiant::STATUT_ACTIF)->count(),
