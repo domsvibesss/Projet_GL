@@ -19,7 +19,7 @@
 {{-- ===== Barre d'outils : recherche + bascule Cartes/Tableau + bouton Ajouter à droite ===== --}}
 <div class="mt-8 flex flex-wrap items-center gap-4">
 
-    <input id="recherche-employes" type="search" placeholder="Rechercher un employé..."
+    <input id="champ-recherche" type="search" placeholder="Rechercher un employé..."
            class="min-w-[12rem] flex-1 rounded-full border border-primary bg-transparent px-5 py-3 text-white">
 
     {{-- Bascule Cartes / Tableau --}}
@@ -40,12 +40,13 @@
 <div id="vue-cartes" class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
     @foreach ($employes as $e)
         {{-- Ce conteneur sert à la recherche et à la suppression dans les deux vues --}}
-        <div data-employe-id="{{ $e['id'] }}"
+        <div data-item-id="{{ $e['id'] }}"
              data-recherche="{{ $e['prenom'] }} {{ $e['nom'] }} {{ $e['poste'] }} {{ $e['contact'] }}">
             <x-manage-card :id="$e['id']"
                            :titre="$e['prenom'].' '.$e['nom'].' - '.$e['poste']"
                            :image="$e['photo']"
-                           :modifier="'/admin/employes/'.$e['id'].'/modifier'" />
+                           :modifier="'/admin/employes/'.$e['id'].'/modifier'"
+                           :supprimer="'/admin/employes/'.$e['id']" />
         </div>
     @endforeach
 </div>
@@ -65,7 +66,7 @@
         </thead>
         <tbody id="liste-employes">
             @foreach ($employes as $e)
-                <tr data-carte data-employe-id="{{ $e['id'] }}"
+                <tr data-carte data-item-id="{{ $e['id'] }}"
                     data-nom="{{ $e['prenom'] }} {{ $e['nom'] }}"
                     data-recherche="{{ $e['prenom'] }} {{ $e['nom'] }} {{ $e['poste'] }} {{ $e['contact'] }}"
                     class="border-b border-gray-200">
@@ -81,8 +82,12 @@
                         <div class="flex justify-end gap-2">
                             <a href="/admin/employes/{{ $e['id'] }}/modifier"
                                class="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-80">Modifier</a>
-                            <button type="button" data-supprimer
-                                    class="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:opacity-80">Supprimer</button>
+                            <form method="POST" action="/admin/employes/{{ $e['id'] }}" class="contents">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" data-supprimer
+                                        class="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:opacity-80">Supprimer</button>
+                            </form>
                         </div>
                     </td>
                 </tr>
@@ -92,6 +97,6 @@
 </div>
 
 {{-- Message affiché quand la recherche ne trouve rien --}}
-<p id="aucun-employe" class="mt-10 hidden text-center text-xl">Aucun employé trouvé.</p>
+<p id="message-vide" class="mt-10 hidden text-center text-xl">Aucun employé trouvé.</p>
 
 @endsection

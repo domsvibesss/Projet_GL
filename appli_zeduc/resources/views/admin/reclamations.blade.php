@@ -118,7 +118,10 @@
 
 {{-- Fenetre Traiter : balise dialog native, cachee jusqu'a showModal() --}}
 <dialog id="detail-reclamation" class="m-auto w-full max-w-xl rounded-2xl bg-white p-0 text-black backdrop:bg-black/70">
-    <div class="space-y-5 p-8">
+    {{-- Vrai formulaire : admin.js remplit l'action avec l'URL de la réclamation ouverte --}}
+    <form id="d-formulaire" method="POST" class="space-y-5 p-8">
+        @csrf
+        @method('PUT')
 
         <div class="flex items-start justify-between gap-4">
             <div>
@@ -145,24 +148,24 @@
 
         <div>
             <label for="d-reponse-admin" class="text-xs font-semibold uppercase text-gray-500">Votre réponse (administrateur)</label>
-            <textarea id="d-reponse-admin" rows="3" placeholder="Écrivez votre réponse à l'étudiant…"
+            <textarea id="d-reponse-admin" name="reponse" rows="3" placeholder="Écrivez votre réponse à l'étudiant…"
                       class="mt-1 w-full resize-none rounded-lg border border-black px-4 py-3"></textarea>
         </div>
 
         <div>
             <label for="d-statut" class="text-xs font-semibold uppercase text-gray-500">Statut de la réclamation</label>
-            <select id="d-statut" class="mt-1 w-full rounded-lg border border-black px-4 py-3">
+            <select id="d-statut" name="statut" class="mt-1 w-full rounded-lg border border-black px-4 py-3">
                 <option value="nouvelle">Nouvelle</option>
                 <option value="en_cours">En cours</option>
                 <option value="resolue">Résolue</option>
             </select>
         </div>
 
-        <button type="button" id="d-enregistrer"
+        <button type="submit" id="d-enregistrer"
                 class="w-full rounded-full bg-primary py-3 text-lg font-semibold text-white transition hover:opacity-80">
             Enregistrer
         </button>
-    </div>
+    </form>
 </dialog>
 
 @endsection

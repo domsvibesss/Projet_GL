@@ -6,15 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Point extends Model
 {
-    protected $table = 'Points';
+    // Valeurs de la colonne `origine` (voir CommandesSeeder)
+    public const ORIGINE_ACHAT      = 'achat';
+    public const ORIGINE_JEUX       = 'jeux';
+    public const ORIGINE_PARRAINAGE = 'parrainage';
 
-    const CREATED_AT = 'date_reception';
-    const UPDATED_AT = null;
+    protected $table = 'points';
 
     protected $fillable = [
         'quantite',
         'origine',
+        'date_reception',
         'date_expiration',
+        'commande_id',
+        'etudiant_id',
+        'jeu_id',
     ];
 
     protected $casts = [

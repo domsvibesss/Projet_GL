@@ -1,148 +1,81 @@
 <?php
- 
+
 namespace App\Http\Controllers\Admin;
- 
+
 use App\Http\Controllers\Controller;
-use App\Models\Menu;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
- 
+use App\Http\Requests\Admin\PlatRequest;
+use App\Models\Plat;
+use App\Services\ImageStorage;
+
 /**
- * CRUD du menu (plats, boissons, ...).
- * Menu utilise SoftDeletes : "supprimer" masque l'article mais garde
- * l'historique des commandes ; on peut le restaurer ou le supprimer pour de bon.
+ * Pages admin/menus et admin/menus-ajout (table plats).
+ * Les vues reçoivent des tableaux au même format que leurs données de démo.
  */
 class MenuController extends Controller
 {
-    public function index(Request $request)
+    private const DOSSIER_IMAGES = 'plats';
+
+    public function __construct(private ImageStorage $images)
     {
-        $request->validate(['categorie' => ['nullable', Rule::in(Menu::CATEGORIES)]]);
- 
-        $items = Menu::query()
-            // ?corbeille=1 : afficher uniquement les articles supprimés
-            ->when($request->boolean('corbeille'), fn ($q) => $q->onlyTrashed())
-            ->dansCategorie($request->categorie)                   // scope du modèle
-            ->when($request->recherche, fn ($q, $s) => $q->where('nom', 'like', "%{$s}%"))
-            ->orderBy('categorie')->orderBy('nom')
-            ->paginate(15)->withQueryString();
- 
-        return view('admin.menu.index', [
-            'items'      => $items,
-            'categories' => Menu::CATEGORIES,
-            'corbeille'  => $request->boolean('corbeille'),
+    }
+
+    public function index()
+    {
+        return view('admin.menus', [
+            'menus' => Plat::orderBy('nom')->get()->map(fn (Plat $p) => $this->pourLaVue($p))->all(),
         ]);
     }
- 
+
     public function create()
     {
-        return view('admin.menu.create', ['categories' => Menu::CATEGORIES]);
+        return view('admin.menus-ajout');
     }
- 
-    public function store(Request $request)
+
+    public function store(PlatRequest $request)
     {
-        $data = $this->validated($request);
- 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('menu', 'public');
-        }
- 
-        Menu::create($data);
- 
-        return redirect()->route('admin.menu.index')
-            ->with('success', 'Article ajouté au menu.');
+        $data = $request->donnees();
+        $data['image'] = $this->images->remplacer(null, $request->file('photo'), self::DOSSIER_IMAGES);
+
+        Plat::create($data);
+
+        // Comme en démo : on reste sur le formulaire, vidé, avec le message de confirmation
+        return redirect()->route('admin.menus.create')
+            ->with('success', 'Plat ajouté avec succès.');
     }
- 
-    public function edit(Menu $menu)
+
+    public function edit(Plat $plat)
     {
-        return view('admin.menu.edit', [
-            'item'       => $menu,
-            'categories' => Menu::CATEGORIES,
-        ]);
+        return view('admin.menus-ajout', ['menu' => $this->pourLaVue($plat)]);
     }
- 
-    public function update(Request $request, Menu $menu)
+
+    public function update(PlatRequest $request, Plat $plat)
     {
-        $data = $this->validated($request);
- 
-        if ($request->hasFile('image')) {
-            if ($menu->image) {
-                Storage::disk('public')->delete($menu->image);
-            }
-            $data['image'] = $request->file('image')->store('menu', 'public');
-        }
- 
-        $menu->update($data);
- 
-        return redirect()->route('admin.menu.index')
-            ->with('success', 'Article mis à jour.');
+        $data = $request->donnees();
+        $data['image'] = $this->images->remplacer($plat->image, $request->file('photo'), self::DOSSIER_IMAGES);
+
+        $plat->update($data);
+
+        return redirect()->route('admin.menus.edit', $plat)
+            ->with('success', 'Menu modifié avec succès.');
     }
- 
-    /**
-     * Suppression "douce" : l'article disparaît du menu mais reste en base.
-     * On garde l'image pour pouvoir restaurer l'article.
-     */
-    public function destroy(Menu $menu)
+
+    public function destroy(Plat $plat)
     {
-        $menu->delete();
- 
-        return redirect()->route('admin.menu.index')
-            ->with('success', 'Article supprimé (restaurable depuis la corbeille).');
+        $this->images->supprimer($plat->image);
+        $plat->delete();
+
+        return redirect()->route('admin.menus.index');
     }
- 
-    public function restore(Menu $menu)
+
+    /** Un plat au format attendu par les vues. */
+    private function pourLaVue(Plat $p): array
     {
-        $menu->restore();
- 
-        return redirect()->route('admin.menu.index')
-            ->with('success', 'Article restauré.');
-    }
- 
-    /** Suppression définitive (depuis la corbeille) : efface aussi l'image. */
-    public function forceDelete(Menu $menu)
-    {
-        if ($menu->image) {
-            Storage::disk('public')->delete($menu->image);
-        }
- 
-        $menu->forceDelete();
- 
-        return redirect()->route('admin.menu.index', ['corbeille' => 1])
-            ->with('success', 'Article supprimé définitivement.');
-    }
- 
-    /**
-     * Raccourci : plat épuisé / de nouveau disponible (sans ouvrir le formulaire).
-     */
-    public function toggleAvailability(Menu $menu)
-    {
-        $menu->update(['disponible' => ! $menu->disponible]);
- 
-        return back()->with('success', $menu->disponible
-            ? 'Article de nouveau disponible.'
-            : 'Article marqué comme épuisé.');
-    }
- 
-    private function validated(Request $request): array
-    {
-        $data = $request->validate([
-            'nom'          => ['required', 'string', 'max:255'],
-            'description'  => ['nullable', 'string', 'max:1000'],
-            'prix'         => ['required', 'integer', 'min:0'],            // en F CFA
-            'categorie'    => ['required', Rule::in(Menu::CATEGORIES)],
-            'image'        => ['nullable', 'image', 'max:2048'],
-            'disponible'   => ['sometimes', 'boolean'],
-            'plat_du_jour' => ['sometimes', 'boolean'],
-        ]);
- 
-        // Une case décochée n'est pas envoyée par le navigateur
-        $data['disponible']   = $request->boolean('disponible');
-        $data['plat_du_jour'] = $request->boolean('plat_du_jour');
- 
-        // 'image' est un fichier : il est enregistré séparément dans store()/update()
-        unset($data['image']);
- 
-        return $data;
+        return [
+            'id'          => $p->id,
+            'nom'         => $p->nom,
+            'prix'        => (int) $p->prix,
+            'description' => $p->description,
+            'photo'       => $p->chemin_image,
+        ];
     }
 }
- 

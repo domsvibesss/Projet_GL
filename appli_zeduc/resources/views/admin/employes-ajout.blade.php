@@ -16,10 +16,9 @@
 </a>
 <h1 class="text-center font-serif text-5xl">{{ $modification ? 'Modifier un employe' : 'Ajouter un employe' }}</h1>
 
-{{-- data-message-succes : texte affiche en mode demo apres envoi --}}
-<form id="form-admin" method="POST" action="#"
-      data-message-succes="{{ $modification ? 'Employé modifié avec succès (démo).' : 'Employé ajouté avec succès (démo).' }}"
-      @if ($modification) data-modification="1" @endif
+{{-- action="#" : le formulaire est envoyé à l'URL de la page (voir routes/web.php) --}}
+{{-- enctype : obligatoire pour envoyer un fichier (la photo) --}}
+<form id="form-admin" method="POST" action="#" enctype="multipart/form-data"
       class="mx-auto mt-10 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-[18rem_1fr]">
 
     @csrf
@@ -52,13 +51,13 @@
 
         <div>
             <label for="nom" class="text-sm font-semibold">Nom</label>
-            <input id="nom" name="nom" type="text" required value="{{ $employe['nom'] ?? '' }}"
+            <input id="nom" name="nom" type="text" required value="{{ old('nom', $employe['nom'] ?? '') }}"
                    class="mt-1 w-full rounded-lg border border-black px-4 py-3">
         </div>
 
         <div>
             <label for="prenom" class="text-sm font-semibold">Prénom</label>
-            <input id="prenom" name="prenom" type="text" required value="{{ $employe['prenom'] ?? '' }}"
+            <input id="prenom" name="prenom" type="text" required value="{{ old('prenom', $employe['prenom'] ?? '') }}"
                    class="mt-1 w-full rounded-lg border border-black px-4 py-3">
         </div>
 
@@ -66,19 +65,20 @@
             <label for="poste" class="text-sm font-semibold">Rôle</label>
             <select id="poste" name="poste" required class="mt-1 w-full rounded-lg border border-black px-4 py-3">
                 @foreach ($postes as $p)
-                    <option value="{{ $p }}" @selected(($employe['poste'] ?? '') === $p)>{{ $p }}</option>
+                    <option value="{{ $p }}" @selected(old('poste', $employe['poste'] ?? '') === $p)>{{ $p }}</option>
                 @endforeach
             </select>
         </div>
 
         <div>
             <label for="contact" class="text-sm font-semibold">Contact</label>
-            <input id="contact" name="contact" type="tel" required value="{{ $employe['contact'] ?? '' }}"
+            <input id="contact" name="contact" type="tel" required value="{{ old('contact', $employe['contact'] ?? '') }}"
                    pattern="(\+237\s?)?6(\s?[0-9]){8}" title="Numéro camerounais, ex : +237 6 90 11 22 33"
                    class="mt-1 w-full rounded-lg border border-black px-4 py-3">
         </div>
 
-        <p id="confirmation-admin" class="font-semibold text-green-700"></p>
+        {{-- Message après envoi : erreur de validation (rouge) ou confirmation (vert) --}}
+        <p id="confirmation-admin" class="font-semibold {{ $errors->any() ? 'text-red-700' : 'text-green-700' }}">{{ $errors->first() ?: session('success') }}</p>
 
         <button type="submit" class="w-full rounded-full bg-primary py-3 text-lg font-semibold text-white transition hover:opacity-80">
             {{ $modification ? 'Enregistrer les modifications' : "Ajouter l'employé" }}

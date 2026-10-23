@@ -9,7 +9,7 @@ class Jeu extends Model
     protected $table = 'jeux';
 
     protected $fillable = [
-        'name',
+        'nom',
         'description',
         'image',
         'date_debut',
@@ -25,15 +25,11 @@ class Jeu extends Model
     public function scopeActifs($query)
     {
         return $query->where('date_debut', '<=', now())
-                     ->where(function ($q) {
-                         $q->whereNull('date_fin')
-                           ->orWhere('date_fin', '>=', now());
-                     });
+                     ->where('date_fin', '>=', now());
     }
 
     public function estActif(): bool
     {
-        return $this->date_debut->isPast()
-            && ($this->date_fin === null || $this->date_fin->isFuture());
+        return $this->date_debut->isPast() && $this->date_fin->isFuture();
     }
 }

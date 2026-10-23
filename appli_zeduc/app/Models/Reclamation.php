@@ -3,24 +3,58 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Reclamation extends Model
 {
-    protected $table = 'Reclamations';
+    // Valeurs de la colonne `statut` (voir ReclamationsSeeder)
+    public const STATUT_EN_COURS = 'en_cours';
+    public const STATUT_ACCEPTE  = 'accepté';
+    public const STATUT_REJETE   = 'rejeté';
+    public const STATUTS         = [self::STATUT_EN_COURS, self::STATUT_ACCEPTE, self::STATUT_REJETE];
+
+    // Valeurs de la colonne `type_reclamation`
+    public const TYPE_PLAINTE = 'Plainte';
+    public const TYPE_AVIS    = 'Avis';
+
+    // Valeurs de la colonne `priorite`
+    public const PRIORITES = ['urgente', 'normale', 'faible'];
+
+    protected $table = 'reclamations';
 
     protected $fillable = [
+        'type_reclamation',
         'description',
-        'ans',
-        'status',
+        'statut',
+        'priorite',
+        'etudiant_id',
+        'gerant_id',
     ];
 
     protected $attributes = [
-        'status' => 'en_attente',
+        'statut' => self::STATUT_EN_COURS,
     ];
 
-    // Claims still waiting for an answer
-    public function scopeEnAttente($query)
+    public function etudiant(): BelongsTo
     {
-        return $query->where('status', 'en_attente');
+        return $this->belongsTo(Etudiant::class);
+    }
+
+    public function reponses(): HasMany
+    {
+        return $this->hasMany(Reponse::class);
+    }
+
+    public function derniereReponse(): HasOne
+    {
+        return $this->hasOne(Reponse::class)->latestOfMany();
+    }
+
+    // Claims still waiting for a decision
+    public function scopeEnCours($query)
+    {
+        return $query->where('statut', self::STATUT_EN_COURS);
     }
 }

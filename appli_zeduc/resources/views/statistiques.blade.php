@@ -4,8 +4,9 @@
 
 @section('content')
 
+{{-- Valeurs de secours : StatsController (page admin) envoie $stats et $parrains --}}
 @php
-    $parrains = [
+    $parrains = $parrains ?? [
         ['initiales' => 'DD', 'nom' => 'Dominique Daphne', 'filleuls' => 17],
         ['initiales' => 'PW', 'nom' => 'Pethe William',    'filleuls' => 15],
         ['initiales' => 'ML', 'nom' => 'Messang Louis',    'filleuls' => 10],
@@ -22,10 +23,10 @@
 
         {{-- Les 4 cartes --}}
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <x-stat-card titre="Commandes d'aujourd'hui" valeur="42" />
-            <x-stat-card titre="Commandes en cours" valeur="8" />
-            <x-stat-card titre="Chiffre d'affaires" valeur="185 000 F" />
-            <x-stat-card titre="Clients actifs" valeur="312" />
+            <x-stat-card titre="Commandes d'aujourd'hui" valeur="{{ $stats['commandes_jour'] ?? '42' }}" />
+            <x-stat-card titre="Commandes en cours" valeur="{{ $stats['commandes_en_cours'] ?? '8' }}" />
+            <x-stat-card titre="Chiffre d'affaires" valeur="{{ $stats['chiffre_affaires'] ?? '185 000 F' }}" />
+            <x-stat-card titre="Clients actifs" valeur="{{ $stats['clients_actifs'] ?? '312' }}" />
         </div>
 
         {{-- Mouvement des points --}}
@@ -46,9 +47,9 @@
             <div class="h-40 mt-4 border-b-2 border-black bg-gray-50"></div>
 
             <div class="grid grid-cols-3 mt-3">
-                <div><p class="text-xs uppercase">Émis</p><p class="text-xl font-bold">48 290</p></div>
-                <div><p class="text-xs uppercase">Utilisés</p><p class="text-xl font-bold">16 840</p></div>
-                <div><p class="text-xs uppercase">Taux</p><p class="text-xl font-bold">34,9 %</p></div>
+                <div><p class="text-xs uppercase">Émis</p><p class="text-xl font-bold">{{ $stats['points_emis'] ?? '48 290' }}</p></div>
+                <div><p class="text-xs uppercase">Utilisés</p><p class="text-xl font-bold">{{ $stats['points_utilises'] ?? '16 840' }}</p></div>
+                <div><p class="text-xs uppercase">Taux</p><p class="text-xl font-bold">{{ $stats['points_taux'] ?? '34,9 %' }}</p></div>
             </div>
         </div>
     </div>
@@ -59,9 +60,9 @@
         <p class="mt-3 text-sm">Un bon poulet se partage. Voici ceux qui le savent.</p>
 
         <div class="grid grid-cols-3 gap-4 mt-6 py-4 border-y-2 border-black">
-            <div><p class="text-xs uppercase">Invitations</p><p class="text-3xl font-bold">1 248</p></div>
-            <div><p class="text-xs uppercase">Converties</p><p class="text-3xl font-bold">438</p></div>
-            <div><p class="text-xs uppercase">Conversion</p><p class="text-3xl font-bold">35 %</p></div>
+            <div><p class="text-xs uppercase">Invitations</p><p class="text-3xl font-bold">{{ $stats['invitations'] ?? '1 248' }}</p></div>
+            <div><p class="text-xs uppercase">Converties</p><p class="text-3xl font-bold">{{ $stats['converties'] ?? '438' }}</p></div>
+            <div><p class="text-xs uppercase">Conversion</p><p class="text-3xl font-bold">{{ $stats['conversion'] ?? '35 %' }}</p></div>
         </div>
 
         <h3 class="mt-6 text-sm uppercase">Meilleurs parrains</h3>

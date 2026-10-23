@@ -22,13 +22,23 @@ class JeuxPromotionsSeeder extends Seeder
              'image' => null, 'date_debut' => now()->addDays(10), 'date_fin' => now()->addDays(40)] + $ts,
         ]);
 
-        // ---- Promotions (prix_promo toujours strictement inférieur à prix_initial) ----
+        // ---- Promotions : les affiches de la page admin/promotions ----
+        // prix_promo < prix_initial ; égaux = événement sans réduction (pas de « -X% » sur l'affiche)
         $promos = [
-            [3500, 2800, now()->subDays(2), now()->addDays(12)],   // promotion en cours
-            [1500, 1000, now()->addDays(5), now()->addDays(15)],   // promotion à venir
+            ['Vendredrink !!!', "Profitez d'une réduction sur toutes les bières !!",
+             'images/admin/promo-boissons.png', 1000, 500, now()->subDays(2), now()->addDays(12)],
+            ['Soirée Champions League', "Tous vos matchs en DIRECT avec l'ambiance du Zeduc !",
+             'images/admin/promo-champions.png', 2000, 2000, now()->subDays(1), now()->addDays(30)],
+            ['Soirée Karaoké', "Profitez d'une réduction sur tous les plats à partir de 2 plats !",
+             'images/admin/promo-karaoke.png', 4000, 3000, now()->addDays(5), now()->addDays(15)],
+            ['Full Poulet', "Profitez d'une réduction de 20% sur tous les plats contenant du poulet !",
+             'images/admin/promo-poulet.png', 3500, 2800, now()->subDays(2), now()->addDays(12)],
         ];
-        foreach ($promos as [$initial, $promo, $debut, $fin]) {
+        foreach ($promos as [$titre, $description, $image, $initial, $promo, $debut, $fin]) {
             $promoId = DB::table('promotions')->insertGetId([
+                'titre'             => $titre,
+                'description'       => $description,
+                'image'             => $image,
                 'prix_initial'      => $initial,
                 'prix_promo'        => $promo,
                 'date_debut'        => $debut,

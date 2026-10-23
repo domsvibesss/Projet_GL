@@ -1,5 +1,5 @@
 // ============================================================
-// Pages admin : suppression, photo, envoi démo, recherche de liste
+// Pages admin : suppression, photo, recherche de liste
 // ============================================================
 
 // ----- Suppression d'une ligne ou d'une carte (bouton avec data-supprimer) -----
@@ -12,7 +12,13 @@ function activerSuppressionCartes() {
         const groupe = bouton.closest('[data-item-id]');    // existe seulement sur les pages Employes et Menus
         const titre  = carte?.dataset.nom ?? carte?.querySelector('h2')?.textContent.trim() ?? 'cet élément';
 
-        if (!confirm(`Supprimer « ${titre} » ?`)) return;
+        if (!confirm(`Supprimer « ${titre} » ?`)) {
+            e.preventDefault();   // annulé : le formulaire n'est pas envoyé
+            return;
+        }
+
+        // Bouton dans un formulaire DELETE : le serveur supprime puis recharge la page
+        if (bouton.type === 'submit') return;
 
         if (groupe) {
             // Pages Employes et Menus : on retire l element dans les deux vues (carte ET ligne du tableau)
@@ -55,25 +61,6 @@ function activerApercuPhoto() {
     $('btn-supprimer-photo').addEventListener('click', () => {
         champ.value = '';
         afficher('');
-    });
-}
-
-// ----- Envoi en MODE DÉMO : on affiche un message au lieu d'envoyer -----
-// À supprimer quand le backend sera branché.
-function activerEnvoiDemo() {
-    const form    = document.getElementById('form-admin');
-    const message = document.getElementById('confirmation-admin');
-    if (!form || !message) return;
-
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        message.textContent = form.dataset.messageSucces ?? 'Enregistré (démo).';
-
-        // En ajout, on vide le formulaire ; en modification, on garde les valeurs
-        if (!form.dataset.modification) {
-            form.reset();
-            document.getElementById('btn-supprimer-photo')?.click();
-        }
     });
 }
 
@@ -146,13 +133,6 @@ function activerVuesListe() {
 // Réclamations (administrateur) : fenêtre « Traiter », recherche, filtres
 // ============================================================
 
-// Pour chaque statut : [texte affiché, couleurs de la pastille, couleur du point]
-const STATUTS = {
-    nouvelle: ['Nouvelle', 'bg-primary text-black',         'bg-black'],
-    en_cours: ['En cours', 'bg-yellow-100 text-yellow-900', 'bg-yellow-500'],
-    resolue:  ['Résolue',  'bg-green-100 text-green-900',   'bg-green-600'],
-};
-
 // Texte de la décision du gérant (la clé vient du backend)
 const VALIDATIONS = {
     attente: 'En attente de validation par le gérant',
@@ -212,6 +192,7 @@ function activerReclamations() {
         const r = JSON.parse(bouton.dataset.reclamation);   // texte JSON -> objet
         ligneOuverte = bouton.closest('tr');
 
+        $('d-formulaire').action = r.url;   // « Enregistrer » envoie à cette réclamation
         $('d-titre').textContent = `${r.id} : ${r.objet}`;
         $('d-meta').textContent  = `${r.client} · ${r.date} · Réclamation ${r.type === 'points' ? 'de points' : 'client'}`;
         $('d-message').textContent    = r.message ?? '—';
@@ -225,30 +206,12 @@ function activerReclamations() {
 
     $('d-fermer').addEventListener('click', () => fenetre.close());
 
-
-    // ----- Enregistrer (MODE DÉMO : la ligne change à l'écran) -----
-    $('d-enregistrer').addEventListener('click', () => {
-        const statut = $('d-statut').value;
-        const [texte, couleurs, point] = STATUTS[statut];
-
-        ligneOuverte.dataset.statut = statut;
-        ligneOuverte.querySelector('[data-cellule-statut]').innerHTML =
-            `<span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold ${couleurs}">
-                <span class="h-2 w-2 rounded-full ${point}"></span>${texte}</span>`;
-
-        if ($('d-reponse-admin').value.trim() !== '') {
-            alert("Réponse envoyée à l'étudiant (démo).");
-        }
-
-        fenetre.close();
-        filtrer();
-    });
+    // « Enregistrer » est un bouton submit : le formulaire part au serveur, qui recharge la page
 }
 
 // ----- DÉMARRAGE -----
 activerSuppressionCartes();
 activerApercuPhoto();
-activerEnvoiDemo();
 activerRechercheListe();
 activerVuesListe();
 activerReclamations();

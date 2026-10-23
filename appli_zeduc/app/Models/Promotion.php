@@ -9,10 +9,14 @@ class Promotion extends Model
     protected $table = 'promotions';
 
     protected $fillable = [
+        'titre',
+        'description',
+        'image',
         'prix_initial',
         'prix_promo',
         'date_debut',
         'date_fin',
+        'administrateur_id',
     ];
 
     protected $casts = [
@@ -42,5 +46,18 @@ class Promotion extends Model
         }
 
         return round((1 - $this->prix_promo / $this->prix_initial) * 100, 1);
+    }
+
+    // Chemin à passer à asset() :
+    //  - "images/..." : affiche commune, rangée dans public/ (donnée par JeuxPromotionsSeeder)
+    //  - sinon        : affiche envoyée (dans storage)
+    //  - pas d'image  : une image de la maquette
+    public function getCheminImageAttribute(): string
+    {
+        if (! $this->image) {
+            return 'images/admin/promo-poulet.png';
+        }
+
+        return str_starts_with($this->image, 'images/') ? $this->image : 'storage/'.$this->image;
     }
 }

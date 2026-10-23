@@ -46,7 +46,9 @@
                            :titre="$m['nom']"
                            :image="$m['photo']"
                            :detail="number_format($m['prix'], 0, ',', ' ') . ' F'"
-                           :modifier="'/admin/menus/'.$m['id'].'/modifier'" />
+                           :modifier="'/admin/menus/'.$m['id'].'/modifier'"
+                           :supprimer="'/admin/menus/'.$m['id']"
+                           remplir />
         </div>
     @endforeach
 </div>
@@ -80,8 +82,12 @@
                         <div class="flex justify-end gap-2">
                             <a href="/admin/menus/{{ $m['id'] }}/modifier"
                                class="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-80">Modifier</a>
-                            <button type="button" data-supprimer
-                                    class="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:opacity-80">Supprimer</button>
+                            <form method="POST" action="/admin/menus/{{ $m['id'] }}" class="contents">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" data-supprimer
+                                        class="rounded-full bg-black px-4 py-2 text-sm font-semibold text-white transition hover:opacity-80">Supprimer</button>
+                            </form>
                         </div>
                     </td>
                 </tr>

@@ -3,17 +3,15 @@
 namespace App\Models;
 
 use App\Models\Concerns\AuthenticatesWithMdp;
+use App\Models\Concerns\HasDateEnregistrement;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class Gerant extends Authenticatable
 {
-    use AuthenticatesWithMdp, Notifiable;
-    protected $table = 'gerants';
+    use AuthenticatesWithMdp, HasDateEnregistrement, Notifiable;
 
-    // Use date_enregistrement as the creation timestamp; no updated_at column
-    const CREATED_AT = 'date_enregistrement';
-    const UPDATED_AT = null;
+    protected $table = 'gerants';
 
     protected $fillable = [
         'nom',

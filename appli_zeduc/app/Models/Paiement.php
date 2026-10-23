@@ -6,15 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Paiement extends Model
 {
-    protected $table = 'Paiements';
-
-    // Use date_paiement as the creation timestamp; no updated_at column
-    const CREATED_AT = 'date_paiement';
-    const UPDATED_AT = null;
+    protected $table = 'paiements';
 
     protected $fillable = [
         'montant_depense',
         'points_depense',
+        'date_paiement',
+        'employe_id',
+        'commande_id',
     ];
 
     protected $casts = [

@@ -6,26 +6,32 @@ use Illuminate\Database\Eloquent\Model;
 
 class Commande extends Model
 {
-    protected $table = 'Commandes';
+    // Valeurs de la colonne `etat` (voir CommandesSeeder)
+    public const ETAT_EN_ATTENTE = 'en_attente';
+    public const ETAT_EN_COURS   = 'en_cours';
+    public const ETAT_EFFECTUE   = 'effectué';
+    public const ETAT_REJETE     = 'rejeté';
 
-    // Use date_commande as the creation timestamp; no updated_at column
-    const CREATED_AT = 'date_commande';
-    const UPDATED_AT = null;
+    protected $table = 'commandes';
 
     protected $fillable = [
-        'amount',
+        'montant_local',
         'points_accumules',
+        'date_commande',
         'etat',
+        'destination',
+        'employe_id',
+        'etudiant_id',
     ];
 
     protected $casts = [
-        'amount'           => 'decimal:2',
+        'montant_local'    => 'decimal:2',
         'points_accumules' => 'integer',
         'date_commande'    => 'datetime',
     ];
 
     protected $attributes = [
         'points_accumules' => 0,
-        'etat'             => 'en_attente',
+        'etat'             => self::ETAT_EN_ATTENTE,
     ];
 }

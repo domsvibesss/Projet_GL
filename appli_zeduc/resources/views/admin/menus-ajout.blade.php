@@ -16,10 +16,8 @@
 <h1 class="text-center font-serif text-5xl">{{ $modification ? "Modification d'un menu" : "Ajout d'un menu" }}</h1>
 
 {{-- enctype : obligatoire pour envoyer un fichier (la photo) --}}
-{{-- data-message-succes : texte affiché en mode démo après envoi --}}
-<form id="form-admin" method="POST" action="#" enctype="multipart/form-data"
-      data-message-succes="{{ $modification ? 'Menu modifié avec succès (démo).' : 'Plat ajouté avec succès (démo).' }}"
-      @if ($modification) data-modification="1" @endif>
+{{-- action="#" : le formulaire est envoyé à l'URL de la page (voir routes/web.php) --}}
+<form id="form-admin" method="POST" action="#" enctype="multipart/form-data">
 
     {{-- Jeton de sécurité obligatoire dans Laravel --}}
     @csrf
@@ -63,25 +61,26 @@
 
                     <div>
                         <label for="nom" class="mb-1 block">Nom du plat</label>
-                        <input id="nom" name="nom" type="text" required value="{{ $menu['nom'] ?? '' }}"
+                        <input id="nom" name="nom" type="text" required value="{{ old('nom', $menu['nom'] ?? '') }}"
                                class="w-full rounded-xl bg-gray-200 px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary">
                     </div>
 
                     <div>
                         <label for="prix" class="mb-1 block">Prix (FCFA)</label>
-                        <input id="prix" name="prix" type="number" min="0" step="50" required value="{{ $menu['prix'] ?? '' }}"
+                        <input id="prix" name="prix" type="number" min="0" step="50" required value="{{ old('prix', $menu['prix'] ?? '') }}"
                             class="w-full rounded-xl bg-gray-200 px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary">
                     </div>
 
                     <div>
                         <label for="description" class="mb-1 block">Description</label>
                         <textarea id="description" name="description" rows="6" required
-                                  class="w-full resize-none rounded-xl bg-gray-200 px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary">{{ $menu['description'] ?? '' }}</textarea>
+                                  class="w-full resize-none rounded-xl bg-gray-200 px-4 py-4 focus:outline-none focus:ring-2 focus:ring-primary">{{ old('description', $menu['description'] ?? '') }}</textarea>
                     </div>
 
                 </div>
 
-                <p id="confirmation-admin" class="mt-4 min-h-6 text-center text-green-700"></p>
+                {{-- Message après envoi : erreur de validation (rouge) ou confirmation (vert) --}}
+                <p id="confirmation-admin" class="mt-4 min-h-6 text-center {{ $errors->any() ? 'text-red-700' : 'text-green-700' }}">{{ $errors->first() ?: session('success') }}</p>
 
                 <button type="submit"
                         class="mx-auto mt-2 block w-full max-w-md rounded-full bg-primary px-6 py-3 text-xl font-semibold text-white transition hover:opacity-80">

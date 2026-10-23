@@ -57,6 +57,7 @@ class CommandesSeeder extends Seeder
                 'points_accumules' => $pointsGagnes,
                 'date_commande'    => $date,
                 'etat'             => $etat,
+                'destination'      => 'Sur place',   // colonne obligatoire (migration commandes)
                 'employe_id'       => $etat === 'en_attente' ? null : $caissier,
                 'etudiant_id'      => $etudiantId,
             ] + $ts);
