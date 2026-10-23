@@ -2,39 +2,29 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/statistiques', function () {
-    return view('statistiques');
-});
-Route::get('/supervision', function () {
-    return view('supervision');
-});
-Route::get('/employes', function () {
-    return view('employes');
-});
-Route::get('/reclamations', function () {
-    return view('reclamations');
-});
-// ===== Espace administrateur (Humphrey) =====
-// Les statistiques sont les mêmes que celles du gérant : on réutilise la page, avec le layout admin
-Route::get('/admin/statistiques', function() {
-    return view('statistiques', ['layout' => 'layouts.admin']);
+Route::get('/', function () {
+    return view('welcome');
 });
 
-Route::get('/admin/employes', function () {
-    return view('admin.employes');
-});    
-Route::get('/admin/employes/ajouter', function () {
-    return view('admin.employes-ajout');
+/*
+|--------------------------------------------------------------------------
+| Espace employé : les PAGES  →  URL : /employe/...
+|--------------------------------------------------------------------------
+| Route::view affiche la vue sans passer par un contrôleur : les données
+| arrivent ensuite par l'API (/api/employe/... dans routes/api.php),
+| appelée par le JavaScript de chaque page.
+| 'auth' : il faut être connecté, sinon redirection vers la page de connexion.
+*/
+Route::middleware('auth')->prefix('employe')->name('employe.')->group(function () {
+    Route::view('/commandes', 'employe.commandes')->name('commandes');
+    Route::view('/menu', 'employe.menu')->name('menu');
+    Route::view('/reclamations', 'employe.reclamations')->name('reclamations');
+    Route::view('/statistiques', 'employe.statistiques')->name('statistiques');
 });
-Route::get('/admin/menus', function () {
-    return view('admin.menus');
-});
-Route::get('/admin/menus/ajouter', function () {
-    return view('admin.menus-ajout');
-});
-Route::get('/admin/promotions', function () {
-    return view('admin.promotions');
-});
-Route::get('/admin/parametres', function () {
-    return view('admin.parametres');
+
+Route::get('', function () {
+    $user = \App\Models\User::where('email', '')->firstOrFail();
+
+    auth()->login($user);                  // ouvre la session comme si on s'était connecté
+    return redirect('/employe/commandes'); // puis envoie sur la première page employé
 });
