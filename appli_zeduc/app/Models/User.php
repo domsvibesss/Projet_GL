@@ -2,48 +2,48 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+// Authenticatable (et non Model) : c'est ce qui permet de se connecter avec ce modèle
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;   // nécessaire pour auth:sanctum dans routes/api.php
 
+/**
+ * Table commune à tous les profils : étudiant, employé, gérant, administrateur.
+ * Aligné sur la migration create_users_table.
+ */
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-        'name',
+        'name',            // = nom
+        'prenom',
         'email',
+        'telephone',
         'password',
+        'date_naissance',
+        'role',            // etudiant | employe | gerant | administrateur
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    // Ne jamais renvoyer le mot de passe dans un JSON
+    protected $hidden = ['password', 'remember_token'];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'         => 'hashed',   // chiffré automatiquement à l'enregistrement
+            'date_naissance'   => 'date',
+            'date_inscription' => 'datetime',
         ];
+    }
+
+    /**
+     * Profil employé (poste, statut) quand role = 'employe'.
+     * Utilisé par le layout employé pour afficher « Assistant cuisinier » sous le nom.
+     */
+    public function employe(): HasOne
+    {
+        return $this->hasOne(Employe::class, 'user_id');
     }
 }
