@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;   // nécessaire pour auth:sanctum dans routes
 
 /**
  * Table commune à tous les profils : étudiant, employé, gérant, administrateur.
- * Aligné sur la migration create_users_table.
+ * Aligné sur la migration create_users_table..
  */
 class User extends Authenticatable
 {
